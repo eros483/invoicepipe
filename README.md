@@ -59,7 +59,7 @@ streamlit run main.py
 
 The interactive prototype will be available at `http://localhost:8501/`
 
-There are sample images present in the base directory labelled as:
+There are sample images present in the `src` directory labelled as:
 1. `img1.png` acts as a sample for Invoice A, the "Happy Path".
 2. `img2.jpg` acts as a sample for Invoice B, the "Ambiguous Format".
 3. `img3.jpg` acts as a sample for Invoice C, the "Fraud/Error" case.
