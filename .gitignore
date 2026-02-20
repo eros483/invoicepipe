@@ -3,3 +3,4 @@ logs/
 __pycache__/
 approved_invoices.csv
 manual_review_needed.txt
+.vscode/
