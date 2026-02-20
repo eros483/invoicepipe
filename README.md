@@ -38,63 +38,35 @@ invoicePipe/
 ## Setup
 
 ```bash
-# 1. Clone / unzip the project
+# Clone repository and  navigate to directory
+git clone https://github.com/Eros483/invoicePipe.git
 cd invoicePipe
 
-# 2. Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-# 3. Install dependencies
+# Install dependencies (suggest using a venv or a package manager)
 pip install -r requirements.txt
 
-# 4. Set your Groq API key
-export GROQ_API_KEY="gsk_..."      # Windows: set GROQ_API_KEY=gsk_...
-
-# 5. Generate the three mock test invoices
-python generate_test_invoices.py
+# Setup Groq API key in the environment file
+cp .env.example .env
 ```
 
 ---
 
-## Running the Server
+## Running the Pipeline
 
 ```bash
-uvicorn main:app --reload
+streamlit run main.py
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
-Interactive docs: `http://127.0.0.1:8000/docs`
+The interactive prototype will be available at `http://localhost:8501/`
+
+There are sample images present in the base directory labelled as:
+1. `img1.png` acts as a sample for Invoice A, the "Happy Path".
+2. `img2.jpg` acts as a sample for Invoice B, the "Ambiguous Format".
+3. `img3.jpg` acts as a sample for Invoice C, the "Fraud/Error" case.
 
 ---
 
-## Processing an Invoice
 
-### Using curl
-
-```bash
-# Invoice A – Happy Path
-curl -X POST "http://127.0.0.1:8000/process-invoice" \
-     -F "file=@invoices/invoice_a_acme.png"
-
-# Invoice B – Ambiguous Date
-curl -X POST "http://127.0.0.1:8000/process-invoice" \
-     -F "file=@invoices/invoice_b_globex.png"
-
-# Invoice C – Fraud/Error Case
-curl -X POST "http://127.0.0.1:8000/process-invoice" \
-     -F "file=@invoices/invoice_c_soylent.png"
-```
-
-### Expected Outcomes
-
-| Invoice | Vendor       | Validation | Output destination          |
-|---------|--------------|------------|-----------------------------|
-| A       | Acme Corp    | ✅ PASS    | `approved_invoices.csv`     |
-| B       | Globex       | ✅ PASS    | `approved_invoices.csv`     |
-| C       | Soylent Corp | ❌ FAIL    | `manual_review_needed.txt`  |
-
----
 
 ## Design Notes
 
@@ -110,11 +82,12 @@ a judgment call was made and can override it if needed.
 
 ### Prompting Strategy
 
-The system prompt instructs the LLM to act as a **pure transcriber**, not an
-interpreter — it must copy values exactly as they appear on the invoice and
+The system prompt instructs the LLM to act as a **transcriber** only, so as to force it to copy values exactly as they appear on the invoice and
 return them in a fixed JSON schema with no markdown and no extra commentary.
 `temperature=0` plus Groq's `response_format={"type":"json_object"}` (JSON
-mode) guarantees a parseable structure every time. All data cleaning
+mode) guarantees a parseable structure every time. 
+
+All data cleaning
 (currency stripping, date normalisation, type casting) happens in Python
 **after** extraction, keeping the LLM focused solely on OCR/reading and
 preventing it from silently "correcting" values that should be flagged as
@@ -137,3 +110,8 @@ invoice_b_globex.png,2024-02-03,Globex,500.00,50.00,550.00
 ```
 [2024-12-01T10:23:45Z] FILE: invoice_c_soylent.png | ERROR: Math Mismatch: Calculated 220.00 (net 200.00 + tax 20.00) vs Total 5000.00 — discrepancy of 4780.00
 ```
+---
+
+## Notes
+- This Prototype was intended to be a `FastAPI + React.JS` app to be deployed via `Render` and `Vercel`.
+    - This was scrapped due to the lack of a persistent storage option available in free tiers.
